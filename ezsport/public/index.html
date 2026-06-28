@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EZSport — Sport Equipment Booking</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+<!-- ====== NOTIFICATION TOAST ====== -->
+<div id="toast-container"></div>
+
+<!-- ====== NOTIFICATION PANEL ====== -->
+<div id="notif-panel" class="notif-panel hidden">
+  <div class="notif-header">
+    <span>Notifications</span>
+    <button onclick="markAllRead()" class="mark-read-btn">Mark all read</button>
+  </div>
+  <div id="notif-list"></div>
+</div>
+<div id="notif-overlay" class="notif-overlay hidden" onclick="toggleNotifPanel()"></div>
+
+<!-- ====== PAGE CONTAINER ====== -->
+<div id="app">
+
+  <!-- SPLASH SCREEN -->
+  <div id="page-splash" class="page active">
+    <div class="splash-bg">
+      <div class="splash-overlay"></div>
+      <div class="splash-content">
+        <div class="splash-logo">
+          <div class="logo-icon">⚡</div>
+          <span class="logo-text">EZ<span class="logo-accent">Sport</span></span>
+        </div>
+        <h1 class="splash-title">Welcome to EZSport</h1>
+        <p class="splash-subtitle">Your Ultimate Sports Companion</p>
+        <p class="splash-desc">Book sport equipment, track your rentals, and stay active at UiTM — all in one place.</p>
+        <button class="btn-primary btn-large" onclick="navigate('login')">Get Started →</button>
+      </div>
+      <div class="splash-athletes">
+        <div class="athlete-silhouette a1"></div>
+        <div class="athlete-silhouette a2"></div>
+        <div class="athlete-silhouette a3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN PAGE -->
+  <div id="page-login" class="page">
+    <div class="auth-bg">
+      <div class="auth-overlay"></div>
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="logo-icon">⚡</div>
+          <span class="logo-text">EZ<span class="logo-accent">Sport</span></span>
+        </div>
+        <div class="role-tabs">
+          <button class="role-tab active" id="login-tab-user" onclick="switchLoginRole('user')">User</button>
+          <button class="role-tab" id="login-tab-admin" onclick="switchLoginRole('admin')">Admin</button>
+        </div>
+        <p class="auth-label" id="login-role-label">Student / Staff Login</p>
+        <div class="form-group">
+          <input type="email" id="login-email" class="form-input" placeholder="Email Address" required />
+        </div>
+        <div class="form-group password-group">
+          <input type="password" id="login-password" class="form-input" placeholder="Password" required />
+          <button class="pwd-toggle" onclick="togglePwd('login-password')">👁</button>
+        </div>
+        <button class="btn-primary full-width" onclick="doLogin()">Log In</button>
+        <p class="auth-switch">Don't have an account? <a href="#" onclick="navigate('register')">Sign Up</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER PAGE -->
+  <div id="page-register" class="page">
+    <div class="auth-bg">
+      <div class="auth-overlay"></div>
+      <div class="auth-card auth-card-tall">
+        <div class="auth-logo">
+          <div class="logo-icon">⚡</div>
+          <span class="logo-text">EZ<span class="logo-accent">Sport</span></span>
+        </div>
+        <div class="role-tabs">
+          <button class="role-tab active" id="reg-tab-user" onclick="switchRegRole('user')">User</button>
+          <button class="role-tab" id="reg-tab-admin" onclick="switchRegRole('admin')">Admin</button>
+        </div>
+        <div class="form-group">
+          <input type="text" id="reg-fullname" class="form-input" placeholder="Full Name" required />
+        </div>
+        <div class="form-group">
+          <input type="email" id="reg-email" class="form-input" placeholder="Email Address" required />
+        </div>
+        <div class="form-group">
+          <input type="tel" id="reg-phone" class="form-input" placeholder="Phone Number (e.g. 019-9852452)" />
+        </div>
+        <div class="form-group" id="reg-student-group">
+          <input type="text" id="reg-studentid" class="form-input" placeholder="Student ID (e.g. 2024273123)" />
+        </div>
+        <div class="form-group hidden" id="reg-staff-group">
+          <input type="text" id="reg-staffid" class="form-input" placeholder="Staff ID (e.g. 1934232)" />
+        </div>
+        <div class="form-group password-group">
+          <input type="password" id="reg-password" class="form-input" placeholder="Create Password" required />
+          <button class="pwd-toggle" onclick="togglePwd('reg-password')">👁</button>
+        </div>
+        <button class="btn-primary full-width" onclick="doRegister()">Create Account</button>
+        <p class="auth-switch">Already have an account? <a href="#" onclick="navigate('login')">Log In</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR (shared) -->
+  <nav id="navbar" class="navbar hidden">
+    <div class="nav-inner">
+      <a class="nav-logo" onclick="goHome()">
+        <div class="logo-icon sm">⚡</div>
+        <span class="logo-text">EZ<span class="logo-accent">Sport</span></span>
+      </a>
+      <button class="hamburger" id="hamburger" onclick="toggleMobileNav()">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a class="nav-link" data-page="home" onclick="navigate('home')">Home</a>
+        <a class="nav-link" data-page="about" onclick="navigate('about')">About</a>
+        <a class="nav-link" data-page="sport-info" onclick="navigate('sport-info')">Sport Info</a>
+        <a class="nav-link" data-page="gear-rental" onclick="navigate('gear-rental')">Gear Rental</a>
+        <a class="nav-link admin-only hidden" data-page="admin-dashboard" onclick="navigate('admin-dashboard')">Admin Dashboard</a>
+        <a class="nav-link user-only hidden" data-page="dashboard" onclick="navigate('dashboard')" id="nav-register-link">Register Now</a>
+      </div>
+      <div class="nav-actions">
+        <button class="notif-btn" onclick="toggleNotifPanel()" id="notif-btn">
+          🔔 <span class="notif-badge hidden" id="notif-badge">0</span>
+        </button>
+        <button class="btn-outline-sm" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HOME PAGE -->
+  <div id="page-home" class="page has-nav">
+    <div class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-tag">UiTM Sport Equipment System</div>
+        <h1 class="hero-title">Make Sport An <span class="accent">Essential</span> Part Of You</h1>
+        <p class="hero-sub">Book equipment, track your rentals, and never miss a game. EZSport makes campus sports accessible to everyone.</p>
+        <div class="hero-actions">
+          <button class="btn-primary btn-large" onclick="navigate('gear-rental')">Browse Equipment</button>
+          <button class="btn-ghost btn-large" onclick="navigate('sport-info')">Explore Sports</button>
+        </div>
+      </div>
+    </div>
+    <section class="stats-bar">
+      <div class="stat-item"><div class="stat-num" id="stat-gear">10+</div><div class="stat-label">Equipment Types</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat-sports">9</div><div class="stat-label">Sports Available</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat-users">—</div><div class="stat-label">Active Members</div></div>
+      <div class="stat-item"><div class="stat-num">24hr</div><div class="stat-label">Max Rental</div></div>
+    </section>
+    <section class="features">
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🏸</div>
+          <h3>Wide Selection</h3>
+          <p>From badminton to rugby — browse all available equipment in one place.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📅</div>
+          <h3>Easy Booking</h3>
+          <p>Pick your dates, choose your gear, and submit your request in minutes.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔔</div>
+          <h3>Live Updates</h3>
+          <p>Get notified when your booking is accepted, rejected, or needs attention.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🆔</div>
+          <h3>ID Verified</h3>
+          <p>Secure system linked to your UiTM Student or Staff ID.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ABOUT PAGE -->
+  <div id="page-about" class="page has-nav">
+    <div class="page-hero about-hero">
+      <div class="hero-overlay"></div>
+      <div class="about-hero-content">
+        <div class="about-tagline">Every Day Is A Chance To Become Better</div>
+        <div class="about-rules">
+          <div class="rule-item"><span class="rule-icon">🕐</span><div><strong>Office Hours</strong><p>Equipment collection and returns must be done during official office hours only.</p></div></div>
+          <div class="rule-item"><span class="rule-icon">⏱</span><div><strong>30-Minute Grace Period</strong><p>Unclaimed bookings will be automatically cancelled after 30 minutes (Recreation).</p></div></div>
+          <div class="rule-item"><span class="rule-icon">⚠️</span><div><strong>Penalties & Fines</strong><p>Strict fines or account suspension will apply for late returns, damage, or lost items.</p></div></div>
+          <div class="rule-item"><span class="rule-icon">🪪</span><div><strong>ID Verification</strong><p>A valid UiTM Student/Staff ID must be presented at the counter upon collection.</p></div></div>
+        </div>
+      </div>
+      <div class="about-contact">
+        <h3>Details</h3>
+        <div id="about-details-display">
+          <div class="contact-item">📞 <span id="about-phone1">—</span></div>
+          <div class="contact-item">📞 <span id="about-phone2">—</span></div>
+          <div class="contact-item">✉️ <span id="about-email">—</span></div>
+          <div class="contact-item">📍 <span id="about-address">—</span></div>
+          <div class="contact-item">🕐 <span id="about-hours">—</span></div>
+          <div class="about-social">
+            <a id="about-instagram-link" class="social-btn" target="_blank">📸</a>
+            <a id="about-tiktok-link" class="social-btn" target="_blank">🎵</a>
+          </div>
+        </div>
+        <!-- Admin edit form -->
+        <div id="about-edit-form" class="hidden">
+          <input class="form-input" id="edit-phone1" placeholder="Phone 1" />
+          <input class="form-input" id="edit-phone2" placeholder="Phone 2" />
+          <input class="form-input" id="edit-email" placeholder="Email" />
+          <input class="form-input" id="edit-instagram" placeholder="Instagram" />
+          <input class="form-input" id="edit-tiktok" placeholder="TikTok" />
+          <input class="form-input" id="edit-address" placeholder="Address" />
+          <input class="form-input" id="edit-hours" placeholder="Office Hours" />
+          <button class="btn-primary" onclick="saveAbout()">Save Changes</button>
+          <button class="btn-ghost" onclick="cancelAboutEdit()">Cancel</button>
+        </div>
+        <button class="btn-outline-sm admin-only hidden" id="about-edit-btn" onclick="startAboutEdit()">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPORT INFO PAGE -->
+  <div id="page-sport-info" class="page has-nav">
+    <div class="page-header">
+      <h2 class="page-title">Sport Info Hub</h2>
+      <p class="page-sub">Explore all sports available at EZSport</p>
+      <button class="btn-primary admin-only hidden" onclick="openAddSportModal()">+ Add New Sport</button>
+    </div>
+    <div id="sports-grid" class="sports-grid"></div>
+  </div>
+
+  <!-- GEAR RENTAL PAGE -->
+  <div id="page-gear-rental" class="page has-nav">
+    <div class="gear-layout">
+      <aside class="gear-sidebar">
+        <h3 class="sidebar-title">Filter</h3>
+        <div class="sidebar-section">
+          <div class="form-group">
+            <input type="text" id="gear-search" class="form-input" placeholder="🔍 Search gear..." oninput="filterGear()" />
+          </div>
+          <label class="sidebar-label">Categories</label>
+          <div class="checkbox-group" id="gear-categories">
+            <label><input type="checkbox" value="Badminton" onchange="filterGear()"> Badminton</label>
+            <label><input type="checkbox" value="Basketball" onchange="filterGear()"> Basketball</label>
+            <label><input type="checkbox" value="Soccer" onchange="filterGear()"> Soccer</label>
+            <label><input type="checkbox" value="Volleyball" onchange="filterGear()"> Volleyball</label>
+            <label><input type="checkbox" value="Rugby" onchange="filterGear()"> Rugby</label>
+            <label><input type="checkbox" value="Handball" onchange="filterGear()"> Handball</label>
+            <label><input type="checkbox" value="Takraw" onchange="filterGear()"> Takraw</label>
+            <label><input type="checkbox" value="Pingpong" onchange="filterGear()"> Pingpong</label>
+            <label><input type="checkbox" value="Netball" onchange="filterGear()"> Netball</label>
+          </div>
+          <label class="sidebar-label">Availability</label>
+          <div class="checkbox-group">
+            <label><input type="radio" name="avail" value="" onchange="filterGear()" checked> All</label>
+            <label><input type="radio" name="avail" value="Available" onchange="filterGear()"> Available</label>
+            <label><input type="radio" name="avail" value="Rented" onchange="filterGear()"> Rented</label>
+            <label><input type="radio" name="avail" value="Damaged" onchange="filterGear()"> Damaged</label>
+          </div>
+        </div>
+      </aside>
+      <main class="gear-main">
+        <div class="gear-header">
+          <h2>Browse & Rent Sport Gear</h2>
+          <button class="btn-primary admin-only hidden" onclick="openAddGearModal()">+ Add New Gear</button>
+        </div>
+        <!-- Admin Table View -->
+        <div id="gear-admin-table" class="hidden">
+          <table class="admin-table">
+            <thead><tr><th>Gear ID</th><th>Item Name</th><th>Category</th><th>Condition</th><th>Status</th><th>Qty</th><th>Last Rental</th><th>Action</th></tr></thead>
+            <tbody id="gear-admin-tbody"></tbody>
+          </table>
+        </div>
+        <!-- User Card View -->
+        <div id="gear-cards" class="gear-cards"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- DASHBOARD (User) -->
+  <div id="page-dashboard" class="page has-nav">
+    <div class="page-header">
+      <h2 class="page-title">My Dashboard</h2>
+      <p class="page-sub">Track your bookings and activity</p>
+    </div>
+    <div class="dashboard-grid">
+      <section class="dash-section">
+        <h3 class="section-title">Recent Activity</h3>
+        <div id="user-bookings-list"></div>
+      </section>
+      <section class="dash-section">
+        <h3 class="section-title">Leave Feedback</h3>
+        <div id="feedback-form-area">
+          <select id="feedback-booking-select" class="form-input">
+            <option value="">Select a completed booking...</option>
+          </select>
+          <div class="rating-stars" id="rating-stars">
+            <span class="star" data-val="1" onclick="setRating(1)">★</span>
+            <span class="star" data-val="2" onclick="setRating(2)">★</span>
+            <span class="star" data-val="3" onclick="setRating(3)">★</span>
+            <span class="star" data-val="4" onclick="setRating(4)">★</span>
+            <span class="star" data-val="5" onclick="setRating(5)">★</span>
+          </div>
+          <textarea id="feedback-text" class="form-input" placeholder="Share your experience..." rows="3"></textarea>
+          <button class="btn-primary" onclick="submitFeedback()">Submit Feedback</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <div id="page-admin-dashboard" class="page has-nav">
+    <div class="page-header">
+      <h2 class="page-title">Admin Dashboard</h2>
+    </div>
+    <div class="admin-stats-row">
+      <div class="admin-stat-card" onclick="scrollToSection('admin-active-loans')">
+        <div class="admin-stat-num" id="dash-active">—</div>
+        <div class="admin-stat-label">Active Loans</div>
+      </div>
+      <div class="admin-stat-card" onclick="scrollToSection('admin-pending')">
+        <div class="admin-stat-num" id="dash-pending">—</div>
+        <div class="admin-stat-label">Pending Requests</div>
+      </div>
+      <div class="admin-stat-card" onclick="scrollToSection('admin-pending')">
+        <div class="admin-stat-num" id="dash-users">—</div>
+        <div class="admin-stat-label">Total Users</div>
+      </div>
+      <div class="admin-stat-card" onclick="scrollToSection('admin-feedback')">
+        <div class="admin-stat-num" id="dash-feedback">—</div>
+        <div class="admin-stat-label">Feedback</div>
+      </div>
+    </div>
+
+    <section id="admin-active-loans" class="admin-section">
+      <h3 class="section-title">Active Loans</h3>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Student/Staff ID</th><th>Gear</th><th>Qty</th><th>Pickup Time</th><th>Return Date</th><th>Status</th></tr></thead>
+          <tbody id="active-loans-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="admin-pending" class="admin-section">
+      <h3 class="section-title">Pending Requests</h3>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Student/Staff ID</th><th>Gear</th><th>Qty</th><th>Pickup Time</th><th>Return Date</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="pending-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="admin-feedback" class="admin-section">
+      <h3 class="section-title">Feedback From Users</h3>
+      <div id="admin-feedback-list" class="feedback-grid"></div>
+    </section>
+  </div>
+
+</div><!-- end #app -->
+
+<!-- ====== MODALS ====== -->
+<!-- Booking Modal -->
+<div id="modal-booking" class="modal hidden">
+  <div class="modal-overlay" onclick="closeModal('modal-booking')"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Booking Request</h3>
+      <button class="modal-close" onclick="closeModal('modal-booking')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="booking-gear-info">
+        <div class="booking-gear-icon" id="booking-gear-icon">🏸</div>
+        <div>
+          <div class="booking-gear-name" id="booking-gear-name">—</div>
+          <div class="booking-gear-id" id="booking-gear-id">—</div>
+        </div>
+      </div>
+      <div class="booking-renter-info">
+        <span>Renter: </span><span id="booking-renter">—</span>
+        <span> | ID: </span><span id="booking-renter-id">—</span>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Rental Type</label>
+          <select id="booking-type" class="form-input">
+            <option value="leisure">Leisure</option>
+            <option value="athlete">Athlete</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input type="number" id="booking-qty" class="form-input" value="1" min="1" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Rental Date</label>
+          <input type="date" id="booking-rental-date" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Return Date</label>
+          <input type="date" id="booking-return-date" class="form-input" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Pickup Time</label>
+          <input type="time" id="booking-pickup-time" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Return Time</label>
+          <input type="time" id="booking-return-time" class="form-input" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-booking')">Cancel Booking</button>
+      <button class="btn-primary" onclick="submitBooking()">Book Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Sport Modal -->
+<div id="modal-sport" class="modal hidden">
+  <div class="modal-overlay" onclick="closeModal('modal-sport')"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="sport-modal-title">Add New Sport</h3>
+      <button class="modal-close" onclick="closeModal('modal-sport')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="sport-edit-id" />
+      <div class="form-group"><input class="form-input" id="sport-name" placeholder="Sport Name" /></div>
+      <div class="form-group"><input class="form-input" id="sport-tagline" placeholder="Tagline" /></div>
+      <div class="form-group"><textarea class="form-input" id="sport-description" placeholder="Description" rows="3"></textarea></div>
+      <div class="form-group"><input class="form-input" id="sport-players" placeholder="Players (e.g. 2 or 4)" /></div>
+      <div class="form-group"><input class="form-input" id="sport-equipment" placeholder="Equipment (comma separated)" /></div>
+      <div class="form-group"><input class="form-input" id="sport-icon" placeholder="Emoji icon (e.g. 🏸)" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-sport')">Cancel</button>
+      <button class="btn-primary" onclick="saveSport()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Gear Modal -->
+<div id="modal-gear" class="modal hidden">
+  <div class="modal-overlay" onclick="closeModal('modal-gear')"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="gear-modal-title">Add New Gear</h3>
+      <button class="modal-close" onclick="closeModal('modal-gear')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="gear-edit-id" />
+      <div class="form-group"><input class="form-input" id="gear-item-name" placeholder="Item Name" /></div>
+      <div class="form-group">
+        <select class="form-input" id="gear-category">
+          <option value="">Select Category</option>
+          <option>Badminton</option><option>Basketball</option><option>Soccer</option>
+          <option>Volleyball</option><option>Rugby</option><option>Handball</option>
+          <option>Takraw</option><option>Pingpong</option><option>Netball</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <select class="form-input" id="gear-condition">
+            <option value="Good">Good</option>
+            <option value="New">New</option>
+            <option value="Damaged">Damaged</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <select class="form-input" id="gear-status">
+            <option value="Available">Available</option>
+            <option value="Rented">Rented</option>
+            <option value="Damaged">Damaged</option>
+            <option value="Not Available">Not Available</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><input class="form-input" type="number" id="gear-total-qty" placeholder="Total Quantity" min="1" /></div>
+        <div class="form-group"><input class="form-input" type="number" id="gear-avail-qty" placeholder="Available Quantity" min="0" /></div>
+      </div>
+      <div class="form-group"><input class="form-input" id="gear-photo" placeholder="Photo URL (optional)" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-gear')">Cancel</button>
+      <button class="btn-primary" onclick="saveGear()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div id="modal-confirm" class="modal hidden">
+  <div class="modal-overlay" onclick="closeModal('modal-confirm')"></div>
+  <div class="modal-box modal-box-sm">
+    <div class="modal-header">
+      <h3 id="confirm-title">Confirm Action</h3>
+      <button class="modal-close" onclick="closeModal('modal-confirm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message">Are you sure?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn-danger" id="confirm-action-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/firebase-config.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
