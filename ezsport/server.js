@@ -7,9 +7,8 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ezsport';
-
+const PORT = process.env.PORT || 5002;
+const MONGODB_URI = "mongodb+srv://adilahhnaam:trDFUfw5ZTjXVD5M@cluster0.rro7nou.mongodb.net/ezsport?retryWrites=true&w=majority&appName=Cluster0";
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('✅ MongoDB connected'))
