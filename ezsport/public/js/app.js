@@ -88,8 +88,8 @@ async function doRegister() {
   const fullName = document.getElementById('reg-fullname').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const phone = document.getElementById('reg-phone').value.trim();
-  const studentId = document.getElementById('reg-studentid').value.trim();
-  const staffId = document.getElementById('reg-staffid').value.trim();
+ const studentId = currentRegRole === 'user' ? document.getElementById('reg-studentid').value.trim() : '';
+  const staffId   = currentRegRole === 'admin' ? document.getElementById('reg-staffid').value.trim() : '';
   const password = document.getElementById('reg-password').value;
   if (!fullName || !email || !password) return toast('Please fill all required fields', 'error');
   try {
@@ -129,6 +129,12 @@ function switchRegRole(role) {
   document.getElementById('reg-student-group').classList.toggle('hidden', role === 'admin');
   document.getElementById('reg-staff-group').classList.toggle('hidden', role === 'user');
 }
+if (role === 'user') {
+    document.getElementById('reg-staffid').value = '';
+  } else {
+    document.getElementById('reg-studentid').value = '';
+  }
+
 
 // ===== NAVIGATION =====
 function navigate(page) {

@@ -8,7 +8,17 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 5002;
-const MONGODB_URI = "mongodb+srv://adilahhnaam:trDFUfw5ZTjXVD5M@cluster0.rro7nou.mongodb.net/ezsport?retryWrites=true&w=majority&appName=Cluster0";
+
+// ===============================
+// ORIGINAL (DO NOT TOUCH)
+// ===============================
+const MONGODB_URI = process.env.MONGODB_URI;
+// ===============================
+// 🔥 ADDED (ENV SUPPORT FOR DEPLOYMENT)
+// ===============================
+const MONGODB_URI_ENV = process.env.MONGODB_URI || MONGODB_URI;
+const SESSION_SECRET_ENV = process.env.SESSION_SECRET || 'ezsport_secret';
+
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('✅ MongoDB connected'))
@@ -22,10 +32,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Session
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'ezsport_secret',
+  secret: SESSION_SECRET_ENV, // 🔥 ADDED (env support)
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: MONGODB_URI }),
+  store: MongoStore.create({ mongoUrl: MONGODB_URI }), // unchanged
   cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 hours
 }));
 

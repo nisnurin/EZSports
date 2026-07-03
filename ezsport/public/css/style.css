@@ -315,3 +315,38 @@ input, select, textarea { font-family: var(--font-body); }
   .modal-box { margin: 0; border-radius: var(--radius); }
   .modal-header, .modal-body, .modal-footer { padding-left: 20px; padding-right: 20px; }
 }
+/* ── OVERDUE ─────────────────────────────────────────────── */
+.badge-overdue {
+  background: rgba(239,68,68,0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(239,68,68,0.5);
+  animation: pulse-red 2s infinite;
+}
+@keyframes pulse-red {
+  0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+  50%     { box-shadow: 0 0 0 4px rgba(239,68,68,0.25); }
+}
+.booking-overdue {
+  border-color: rgba(239,68,68,0.4) !important;
+  background: rgba(239,68,68,0.04) !important;
+}
+.row-overdue td { background: rgba(239,68,68,0.05); }
+.row-overdue    { border-left: 3px solid var(--clr-danger); }
+.overdue-banner {
+  max-width: 1280px;
+  margin: 0 auto 24px;
+  padding: 16px 40px;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.4);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  color: #ff6b6b;
+}
+.overdue-banner-icon { font-size: 28px; flex-shrink: 0; }
+.empty-cell {
+  text-align: center;
+  color: var(--clr-muted);
+  padding: 24px;
+}
