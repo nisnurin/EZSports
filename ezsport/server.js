@@ -13,6 +13,9 @@ const PORT = process.env.PORT || 5002;
 // DATABASE CONNECTION STRING (Hardcoded directly to fix the undefined error)
 // =========================================================================
 const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  throw new Error("MONGODB_URI environment variable is required");
+}
 const SESSION_SECRET_ENV = process.env.SESSION_SECRET || 'ezsport_secret';
 
 // Connect to MongoDB
