@@ -60,12 +60,23 @@ router.put('/:id/status', async (req, res) => {
     booking.status = status;
     await booking.save();
     if (status === 'accepted') {
-      await Gear.findByIdAndUpdate(booking.gear._id, { $inc: { availableQuantity: -booking.quantity }, status: 'Rented', lastRental: new Date() });
+      const gearDoc = await Gear.findById(booking.gear._id);
+      const newQty = gearDoc.availableQuantity - booking.quantity;
+      await Gear.findByIdAndUpdate(booking.gear._id, {
+        availableQuantity: newQty,
+        status: newQty <= 0 ? 'Rented' : 'Available',
+        lastRental: new Date()
+      });
       await Notification.create({ user: booking.user, message: `Your booking for ${booking.gearName} has been ACCEPTED! Pickup at ${booking.pickupTime}.`, type: 'booking' });
     } else if (status === 'rejected') {
       await Notification.create({ user: booking.user, message: `Your booking for ${booking.gearName} has been rejected.`, type: 'booking' });
     } else if (status === 'returned' || status === 'late-returned') {
-      await Gear.findByIdAndUpdate(booking.gear._id, { $inc: { availableQuantity: booking.quantity } });
+      const gearDoc = await Gear.findById(booking.gear._id);
+      const newQty = gearDoc.availableQuantity + booking.quantity;
+      const update = { availableQuantity: newQty };
+      // Only auto-restore to Available if it wasn't manually set to Damaged/Not Available
+      if (gearDoc.status === 'Rented' && newQty > 0) update.status = 'Available';
+      await Gear.findByIdAndUpdate(booking.gear._id, update);
       if (status === 'late-returned') {
         await Notification.create({ user: booking.user, message: `Your booking for ${booking.gearName} has been marked as returned LATE.`, type: 'alert' });
       }

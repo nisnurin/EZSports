@@ -369,8 +369,8 @@ function renderGear(gear) {
           <div class="gear-card-avail">Available: <span class="avail-count">${g.availableQuantity}</span></div>
           <span class="status-badge badge-${g.status.toLowerCase().replace(' ','-')}">${g.status}</span>
           <div style="margin-top:12px;">
-            <button class="btn-primary btn-sm full-width" onclick="openBookingModal('${g._id}')" ${g.availableQuantity < 1 || g.status !== 'Available' ? 'disabled style="opacity:0.5"' : ''}>
-              ${g.availableQuantity < 1 || g.status !== 'Available' ? 'Unavailable' : 'Book Now'}
+            <button class="btn-primary btn-sm full-width" onclick="openBookingModal('${g._id}')" ${g.availableQuantity < 1 || g.status === 'Damaged' || g.status === 'Not Available' ? 'disabled style="opacity:0.5"' : ''}>
+              ${g.availableQuantity < 1 || g.status === 'Damaged' || g.status === 'Not Available' ? 'Unavailable' : 'Book Now'}
             </button>
           </div>
         </div>
