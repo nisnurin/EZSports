@@ -72,7 +72,7 @@
           <input type="password" id="login-password" class="form-input" placeholder="Password" required />
           <button class="pwd-toggle" onclick="togglePwd('login-password')">👁</button>
         </div>
-      <button class="btn-primary full-width" id="login-btn" onclick="doLogin()">Log In</button>
+        <button class="btn-primary full-width" onclick="doLogin()">Log In</button>
         <p class="auth-switch">Don't have an account? <a href="#" onclick="navigate('register')">Sign Up</a></p>
       </div>
     </div>
@@ -110,7 +110,7 @@
           <input type="password" id="reg-password" class="form-input" placeholder="Create Password" required />
           <button class="pwd-toggle" onclick="togglePwd('reg-password')">👁</button>
         </div>
-        <button class="btn-primary full-width" id="reg-btn" data-label="Create Account" onclick="doRegister()">Create Account</button>
+        <button class="btn-primary full-width" onclick="doRegister()">Create Account</button>
         <p class="auth-switch">Already have an account? <a href="#" onclick="navigate('login')">Log In</a></p>
       </div>
     </div>
@@ -293,16 +293,6 @@
     <div class="page-header">
       <h2 class="page-title">My Dashboard</h2>
       <p class="page-sub">Track your bookings and activity</p>
-    </div>
-
-    <!-- ⚠️ Overdue Warning Banner -->
-    <div id="overdue-warning" class="overdue-banner hidden">
-      <div class="overdue-banner-icon">⚠️</div>
-      <div>
-        <strong>You have overdue item(s)!</strong>
-        <ul id="overdue-warning-list" style="margin:6px 0 0 16px;font-size:13px;"></ul>
-        <p style="font-size:12px;margin-top:6px;opacity:0.8;">Fines may apply. Please return equipment immediately.</p>
-      </div>
     </div>
     <div class="dashboard-grid">
       <section class="dash-section">
