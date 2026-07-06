@@ -88,8 +88,8 @@ async function doRegister() {
   const fullName = document.getElementById('reg-fullname').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const phone = document.getElementById('reg-phone').value.trim();
- const studentId = currentRegRole === 'user' ? document.getElementById('reg-studentid').value.trim() : '';
-  const staffId   = currentRegRole === 'admin' ? document.getElementById('reg-staffid').value.trim() : '';
+  const studentId = document.getElementById('reg-studentid').value.trim();
+  const staffId = document.getElementById('reg-staffid').value.trim();
   const password = document.getElementById('reg-password').value;
   if (!fullName || !email || !password) return toast('Please fill all required fields', 'error');
   try {
@@ -129,12 +129,6 @@ function switchRegRole(role) {
   document.getElementById('reg-student-group').classList.toggle('hidden', role === 'admin');
   document.getElementById('reg-staff-group').classList.toggle('hidden', role === 'user');
 }
-if (role === 'user') {
-    document.getElementById('reg-staffid').value = '';
-  } else {
-    document.getElementById('reg-studentid').value = '';
-  }
-
 
 // ===== NAVIGATION =====
 function navigate(page) {
@@ -229,8 +223,6 @@ function startAboutEdit() {
     document.getElementById('edit-phone1').value = data.phone1 || '';
     document.getElementById('edit-phone2').value = data.phone2 || '';
     document.getElementById('edit-email').value = data.email || '';
-    document.getElementById('edit-instagram').value = data.instagram || '';
-    document.getElementById('edit-tiktok').value = data.tiktok || '';
     document.getElementById('edit-address').value = data.address || '';
     document.getElementById('edit-hours').value = data.officeHours || '';
   });
@@ -367,21 +359,37 @@ function renderGear(gear) {
     const categoryEmojis = { Badminton:'🏸', Basketball:'🏀', Soccer:'⚽', Volleyball:'🏐', Rugby:'🏉', Handball:'🤾', Takraw:'⚽', Pingpong:'🏓', Netball:'🏀' };
     const cards = document.getElementById('gear-cards');
     if (!gear.length) { cards.innerHTML = '<div class="empty-state"><div class="empty-icon">🏋️</div><p>No equipment found.</p></div>'; return; }
-    cards.innerHTML = gear.map(g => `
+  cards.innerHTML = gear.map(g => {
+      const rentedQty = g.totalQuantity - g.availableQuantity;
+
+      let badgeText = g.status;
+      let badgeStyle = ""; 
+
+      if (g.availableQuantity === 0 && g.status === 'Rented') {
+        badgeText = "Fully Rented";
+        badgeStyle = "background-color: #8B4513; color: #fff; border: none;"; // Warna Koko / Coklat
+      } else if (g.status === 'Available') {
+        badgeText = "Available";
+      }
+      
+      return`
       <div class="gear-card">
         <div class="gear-card-img">${g.photo ? `<img src="${g.photo}" alt="${g.itemName}" style="width:100%;height:140px;object-fit:cover;" />` : (categoryEmojis[g.category] || '🎽')}</div>
         <div class="gear-card-body">
           <div class="gear-card-name">${g.itemName}</div>
           <div class="gear-card-avail">Available: <span class="avail-count">${g.availableQuantity}</span></div>
+          <div class="gear-card-rented" style="font-size: 0.85rem; color: #8a8d93; margin-bottom: 8px; margin-top: 2px;">
+  Rented: ${rentedQty} 
+</div>
           <span class="status-badge badge-${g.status.toLowerCase().replace(' ','-')}">${g.status}</span>
           <div style="margin-top:12px;">
-            <button class="btn-primary btn-sm full-width" onclick="openBookingModal('${g._id}')" ${g.availableQuantity < 1 || g.status !== 'Available' ? 'disabled style="opacity:0.5"' : ''}>
-              ${g.availableQuantity < 1 || g.status !== 'Available' ? 'Unavailable' : 'Book Now'}
+            <button class="btn-primary btn-sm full-width" onclick="openBookingModal('${g._id}')" ${g.availableQuantity < 1 || g.status === 'Damaged' || g.status === 'Not Available' ? 'disabled style="opacity:0.5"' : ''}>
+              ${g.availableQuantity < 1 || g.status === 'Damaged' || g.status === 'Not Available' ? 'Unavailable' : 'Book Now'}
             </button>
           </div>
         </div>
       </div>
-    `).join('');
+    `} ).join('');
   }
 }
 
@@ -528,8 +536,14 @@ async function loadAdminDashboard() {
         <td>${b.pickupTime}</td>
         <td>${new Date(b.returnDate).toLocaleDateString()}</td>
         <td><span class="status-badge badge-active">ACTIVE</span></td>
+        <td>
+          <div class="action-btns">
+            <button class="btn-danger btn-sm" onclick="updateBookingStatus('${b._id}','late-returned')">Late Returned</button>
+            <button class="btn-primary btn-sm" onclick="updateBookingStatus('${b._id}','returned')">Returned</button>
+          </div>
+        </td>
       </tr>
-    `).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--clr-muted);padding:24px;">No active loans</td></tr>';
+    `).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--clr-muted);padding:24px;">No active loans</td></tr>';
 
     // Pending requests
     const pending = bookings.filter(b => b.status === 'pending');
@@ -564,12 +578,20 @@ async function loadAdminDashboard() {
 }
 
 async function updateBookingStatus(id, status) {
-  await fetch(`/api/bookings/${id}/status`, {
-    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status })
-  });
-  toast(`Booking ${status}!`, 'success');
-  loadAdminDashboard();
+  try {
+    const res = await fetch(`/api/bookings/${id}/status`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return toast(data.error || 'Failed to update booking', 'error');
+    }
+    toast(`Booking ${status}!`, 'success');
+    loadAdminDashboard();
+  } catch (e) {
+    toast('Connection error. Is the server running?', 'error');
+  }
 }
 
 // ===== GEAR ADMIN =====
