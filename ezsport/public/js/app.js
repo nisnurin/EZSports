@@ -348,7 +348,7 @@ function renderGear(gear) {
         <td>
           <div class="action-btns">
             <button class="btn-outline-sm btn-sm" onclick="openEditGearModal('${g._id}')">Edit</button>
-            <button class="btn-danger btn-sm" onclick="confirmDelete('gear','${g._id}')">Mark Damaged</button>
+            <button class="btn-danger btn-sm" onclick="confirmDelete('gear','${g._id}')">Delete</button>
           </div>
         </td>
       </tr>
