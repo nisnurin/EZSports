@@ -1,36 +1,120 @@
-# EZSport: Sport Equipment Booking System
+# EZSport – Responsive Sports Equipment Booking Management System
 
-EZSport is a specialized digital platform engineered for the UiTM community to streamline the management and reservation of sports equipment. Designed as a group project for CSC578, the system bridges the gap between administrative oversight and user convenience.
+## Project Description
 
-## Project Team
-**Nurin Nisrina Binti Syazwan Wirdani** (2024643144): Project Manager, QA Tester, & Deployment. Responsible for managing project progress, conducting system testing, handling deployment setup, and ensuring the system runs properly before submission.
+EZSport is a responsive web application developed for Universiti Teknologi MARA (UiTM) to simplify sports equipment booking and inventory management. The system enables students and staff to browse available sports equipment, submit booking requests, and monitor booking status, while administrators can manage equipment, approve bookings, and maintain inventory through a centralized dashboard.
 
-**Khairi Rahimi Khyril Norahim** (2024273124): UI/UX Designer & Frontend Support. Responsible for designing the user interface and improving user experience through wireframes and layouts.
+---
 
-**Adilah Binti Na'am** (2024269304): Backend Developer & Database Administrator. Responsible for developing backend functionalities, managing server-side logic, handling APIs, and designing the MongoDB database structure and relationships.
+## Technologies Used
 
-**Muhammad Irfan Danish Bin Mohd Irwan** (2024413774): Frontend Developer. Responsible for developing responsive web pages using HTML, CSS, JavaScript, and Bootstrap, as well as integrating frontend components with backend functionalities.
+### Frontend
+- HTML5
+- CSS3
+- Bootstrap 5
+- JavaScript
+- EJS
 
-## Key Features
-1. Role-Based Access: Provides distinct interfaces and authentication flows tailored for both general users (students/staff) and administrative staff.
+### Backend
+- Node.js
+- Express.js
 
-2. End-to-End Booking Workflow: Users can browse equipment by category, check real-time availability, and initiate bookings, while admins can manage the approval or rejection of these requests.
+### Database
+- MongoDB Atlas
+- Mongoose
 
-3. Comprehensive Dashboards:
+### Other Tools
+- GitHub
+- Visual Studio Code
+- Render
+- Vercel
 
-  User: Enables users to monitor the status of their requests (pending, approved, accepted), view recent activity, and provide feedback.
+---
 
-  Admin: Offers a centralized hub to track active loans, manage pending requests, and view total user engagement.
+## Project Setup
 
-4. Dynamic Content Management: Admins have the authority to edit, add, or delete information regarding sports equipment and general site details.
+### 1. Clone the repository
 
-5. Responsive Design: Optimized for mobile viewing to ensure students can manage their sports bookings on the go.
+```bash
+git clone https://github.com/nisnurin/EZSports.git
+```
 
-## Speacial features
-1. Streamlined Policy Enforcement: The platform integrates critical institutional guidelines directly into the user experience, such as the 30-minute grace period for unclaimed bookings and the mandatory UiTM ID verification process.
+### 2. Navigate to the project folder
 
-1. Real-Time Inventory Updates: The system ensures data integrity by automatically updating gear availability once an admin confirms a booking, reducing the risk of double-bookings.
+```bash
+cd EZSport
+```
 
-3. Balanced Accountability: By creating a transparent feedback loop and digital audit trail for equipment returns and potential penalties/fines, the system promotes responsible usage of institutional assets.
+### 3. Install dependencies
 
-4. Collaborative Development: The project is a coordinated team effort, integrating specialized roles in UI/UX design, database management, and full-stack development to create a professional-grade school application.
+```bash
+npm install
+```
+
+### 4. Create a `.env` file
+
+Create a `.env` file in the root directory and add the following environment variables.
+
+```env
+PORT=3000
+
+MONGODB_URI=your_mongodb_connection_string
+
+SESSION_SECRET=your_session_secret
+```
+
+> Replace the values above with your own configuration.
+
+### 5. Start the application
+
+```bash
+npm start
+```
+
+or
+
+```bash
+node app.js
+```
+
+The application will be available at:
+
+```
+http://localhost/3000
+```
+
+---
+
+## Features
+
+### User
+- Register account
+- Login and logout
+- Browse sports equipment
+- Book sports equipment
+- View booking status
+
+### Administrator
+- Manage sports equipment (CRUD)
+- Approve or reject bookings
+- Monitor inventory
+- Manage booking records
+
+---
+
+## Live Application
+
+Frontend:
+https://YOUR-VERCEL-URL.vercel.app
+
+Backend:
+https://ezsports.onrender.com
+
+---
+
+## Team Members
+
+- Nurin Nisrina Binti Syazwan Wirdani
+- Khairi Rahimi Khyril Norahim
+- Adilah Binti Na'am
+- Muhammad Irfan Danish Bin Mohd Irwan
