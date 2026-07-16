@@ -27,8 +27,7 @@ app.set('trust proxy', 1);
 // CORS — allow your Vercel frontend domain(s) and send credentials (cookies)
 // =========================================================================
 const ALLOWED_ORIGINS = [
-  'https://ezsportss.vercel.app',
-  'https://ezsportss-git-main-irfandanish19s-projects.vercel.app',
+  'https://ezsportssss.vercel.app',
   'http://localhost:3000', // optional: for local frontend testing
 ];
 
