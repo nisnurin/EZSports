@@ -1,3 +1,16 @@
+// =========================================================================
+// API CONFIG — point this at your Render backend URL
+// =========================================================================
+const API_BASE = 'https://ezsports.onrender.com'; // <-- replace with your actual Render URL
+
+// Wrapper around fetch() that:
+// 1. Prefixes every relative /api/... call with the Render backend URL
+// 2. Sends credentials (cookies) cross-domain, required for sessions to work
+function apiFetch(path, options = {}) {
+  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  return fetch(url, { ...options, credentials: 'include' });
+}
+
 // ===== STATE =====
 let currentUser = null;
 let currentLoginRole = 'user';
@@ -19,15 +32,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function seedData() {
   try {
-    await fetch('/api/gear/seed/default', { method: 'POST' });
-    await fetch('/api/sports/seed/default', { method: 'POST' });
+    await apiFetch('/api/gear/seed/default', { method: 'POST' });
+    await apiFetch('/api/sports/seed/default', { method: 'POST' });
   } catch (e) {}
 }
 
 // ===== AUTH =====
 async function checkAuth() {
   try {
-    const res = await fetch('/api/auth/me');
+    const res = await apiFetch('/api/auth/me');
     const data = await res.json();
     if (data.user) {
       currentUser = data.user;
@@ -70,7 +83,7 @@ async function doLogin() {
   const password = document.getElementById('login-password').value;
   if (!email || !password) return toast('Please fill in all fields', 'error');
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await apiFetch('/api/auth/login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, role: currentLoginRole })
     });
@@ -93,7 +106,7 @@ async function doRegister() {
   const password = document.getElementById('reg-password').value;
   if (!fullName || !email || !password) return toast('Please fill all required fields', 'error');
   try {
-    const res = await fetch('/api/auth/register', {
+    const res = await apiFetch('/api/auth/register', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fullName, email, phoneNumber: phone, studentId, staffId, password, role: currentRegRole })
     });
@@ -108,7 +121,7 @@ async function doRegister() {
 }
 
 async function doLogout() {
-  await fetch('/api/auth/logout', { method: 'POST' });
+  await apiFetch('/api/auth/logout', { method: 'POST' });
   currentUser = null;
   document.getElementById('navbar').classList.add('hidden');
   navigate('splash');
@@ -154,7 +167,7 @@ function goHome() { navigate('home'); }
 // ===== HOME STATS =====
 async function loadHomeStats() {
   try {
-    const stats = await fetch('/api/admin/stats').then(r => r.json());
+    const stats = await apiFetch('/api/admin/stats').then(r => r.json());
     document.getElementById('stat-users').textContent = stats.totalUsers + '+';
   } catch (e) {}
 }
@@ -163,7 +176,7 @@ async function loadHomeStats() {
 async function loadNotifications() {
   if (!currentUser) return;
   try {
-    const notifs = await fetch('/api/notifications').then(r => r.json());
+    const notifs = await apiFetch('/api/notifications').then(r => r.json());
     const unread = notifs.filter(n => !n.read).length;
     const badge = document.getElementById('notif-badge');
     if (unread > 0) {
@@ -194,14 +207,14 @@ function toggleNotifPanel() {
 }
 
 async function markAllRead() {
-  await fetch('/api/notifications/read-all', { method: 'PUT' });
+  await apiFetch('/api/notifications/read-all', { method: 'PUT' });
   loadNotifications();
 }
 
 // ===== ABOUT =====
 async function loadAbout() {
   try {
-    const data = await fetch('/api/about').then(r => r.json());
+    const data = await apiFetch('/api/about').then(r => r.json());
     document.getElementById('about-phone1').textContent = data.phone1 || '—';
     document.getElementById('about-phone2').textContent = data.phone2 || '—';
     document.getElementById('about-email').textContent = data.email || '—';
@@ -219,7 +232,7 @@ function startAboutEdit() {
   document.getElementById('about-details-display').classList.add('hidden');
   document.getElementById('about-edit-form').classList.remove('hidden');
   document.getElementById('about-edit-btn').classList.add('hidden');
-  fetch('/api/about').then(r => r.json()).then(data => {
+  apiFetch('/api/about').then(r => r.json()).then(data => {
     document.getElementById('edit-phone1').value = data.phone1 || '';
     document.getElementById('edit-phone2').value = data.phone2 || '';
     document.getElementById('edit-email').value = data.email || '';
@@ -238,7 +251,7 @@ async function saveAbout() {
     address: document.getElementById('edit-address').value,
     officeHours: document.getElementById('edit-hours').value
   };
-  await fetch('/api/about', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  await apiFetch('/api/about', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   cancelAboutEdit();
   loadAbout();
   toast('About info updated!', 'success');
@@ -253,7 +266,7 @@ function cancelAboutEdit() {
 // ===== SPORT INFO =====
 async function loadSports() {
   try {
-    const sports = await fetch('/api/sports').then(r => r.json());
+    const sports = await apiFetch('/api/sports').then(r => r.json());
     const grid = document.getElementById('sports-grid');
     if (!sports.length) { grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🏅</div><p>No sports added yet.</p></div>'; return; }
     grid.innerHTML = sports.map(s => `
@@ -286,7 +299,7 @@ function openAddSportModal() {
 
 async function openEditSportModal(id) {
   try {
-    const sports = await fetch('/api/sports').then(r => r.json());
+    const sports = await apiFetch('/api/sports').then(r => r.json());
     const sport = sports.find(s => s._id === id || s.name === id);
     if (!sport) return;
     currentSportEdit = sport;
@@ -313,9 +326,9 @@ async function saveSport() {
   };
   const id = document.getElementById('sport-edit-id').value;
   if (id) {
-    await fetch(`/api/sports/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    await apiFetch(`/api/sports/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   } else {
-    await fetch('/api/sports', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    await apiFetch('/api/sports', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   }
   closeModal('modal-sport');
   loadSports();
@@ -325,7 +338,7 @@ async function saveSport() {
 // ===== GEAR RENTAL =====
 async function loadGear() {
   try {
-    allGear = await fetch('/api/gear').then(r => r.json());
+    allGear = await apiFetch('/api/gear').then(r => r.json());
     renderGear(allGear);
   } catch (e) { console.error(e); }
 }
@@ -441,7 +454,7 @@ async function submitBooking() {
   };
   if (!payload.rentalDate || !payload.returnDate || !payload.pickupTime) return toast('Please fill all fields', 'error');
   try {
-    const res = await fetch('/api/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const res = await apiFetch('/api/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await res.json();
     if (!res.ok) return toast(data.error || 'Booking failed', 'error');
     closeModal('modal-booking');
@@ -453,7 +466,7 @@ async function submitBooking() {
 // ===== USER DASHBOARD =====
 async function loadUserDashboard() {
   try {
-    const bookings = await fetch('/api/bookings/my').then(r => r.json());
+    const bookings = await apiFetch('/api/bookings/my').then(r => r.json());
     const list = document.getElementById('user-bookings-list');
     if (!bookings.length) {
       list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>No bookings yet. Go rent some gear!</p></div>';
@@ -483,7 +496,7 @@ async function loadUserDashboard() {
 }
 
 async function cancelBooking(id) {
-  await fetch(`/api/bookings/${id}/cancel`, { method: 'PUT' });
+  await apiFetch(`/api/bookings/${id}/cancel`, { method: 'PUT' });
   toast('Booking cancelled', 'success');
   loadUserDashboard();
 }
@@ -497,7 +510,7 @@ async function submitFeedback() {
   const bookingId = document.getElementById('feedback-booking-select').value;
   const feedback = document.getElementById('feedback-text').value.trim();
   if (!bookingId || !feedback) return toast('Please select a booking and write feedback', 'error');
-  await fetch('/api/feedback', {
+  await apiFetch('/api/feedback', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ bookingId, feedback, rating: selectedRating })
   });
@@ -509,7 +522,7 @@ async function submitFeedback() {
 // ===== ADMIN DASHBOARD =====
 async function loadAdminStats() {
   try {
-    const stats = await fetch('/api/admin/stats').then(r => r.json());
+    const stats = await apiFetch('/api/admin/stats').then(r => r.json());
     document.getElementById('stat-users').textContent = stats.totalUsers + '+';
   } catch (e) {}
 }
@@ -517,9 +530,9 @@ async function loadAdminStats() {
 async function loadAdminDashboard() {
   try {
     const [stats, bookings, feedbacks] = await Promise.all([
-      fetch('/api/admin/stats').then(r => r.json()),
-      fetch('/api/bookings/all').then(r => r.json()),
-      fetch('/api/feedback/all').then(r => r.json())
+      apiFetch('/api/admin/stats').then(r => r.json()),
+      apiFetch('/api/bookings/all').then(r => r.json()),
+      apiFetch('/api/feedback/all').then(r => r.json())
     ]);
     document.getElementById('dash-active').textContent = stats.activeLoans;
     document.getElementById('dash-pending').textContent = stats.pendingRequests;
@@ -579,7 +592,7 @@ async function loadAdminDashboard() {
 
 async function updateBookingStatus(id, status) {
   try {
-    const res = await fetch(`/api/bookings/${id}/status`, {
+    const res = await apiFetch(`/api/bookings/${id}/status`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     });
@@ -636,9 +649,9 @@ async function saveGear() {
   };
   const id = document.getElementById('gear-edit-id').value;
   if (id) {
-    await fetch(`/api/gear/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    await apiFetch(`/api/gear/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   } else {
-    await fetch('/api/gear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    await apiFetch('/api/gear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   }
   closeModal('modal-gear');
   loadGear();
@@ -651,8 +664,8 @@ function confirmDelete(type, id) {
   document.getElementById('confirm-message').textContent = `Are you sure you want to delete this ${type}? This cannot be undone.`;
   const btn = document.getElementById('confirm-action-btn');
   btn.onclick = async () => {
-    if (type === 'gear') { await fetch(`/api/gear/${id}`, { method: 'DELETE' }); loadGear(); }
-    if (type === 'sport') { await fetch(`/api/sports/${id}`, { method: 'DELETE' }); loadSports(); }
+    if (type === 'gear') { await apiFetch(`/api/gear/${id}`, { method: 'DELETE' }); loadGear(); }
+    if (type === 'sport') { await apiFetch(`/api/sports/${id}`, { method: 'DELETE' }); loadSports(); }
     closeModal('modal-confirm');
     toast(`${type} deleted`, 'success');
   };
