@@ -105,10 +105,10 @@ http://localhost/3000
 ## Live Application
 
 Frontend:
-https://YOUR-VERCEL-URL.vercel.app
+https://ezsportssss.vercel.app/
 
 Backend:
-https://ezsports.onrender.com
+https://ezsportssss.onrender.com
 
 ---
 
