@@ -1,7 +1,7 @@
 // =========================================================================
 // API CONFIG — point this at your Render backend URL
 // =========================================================================
-const API_BASE = 'https://ezsports.onrender.com'; // <-- replace with your actual Render URL
+const API_BASE = 'https://ezsportssss.onrender.com';
 
 // Wrapper around fetch() that:
 // 1. Prefixes every relative /api/... call with the Render backend URL
