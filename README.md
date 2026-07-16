@@ -108,7 +108,7 @@ Frontend:
 https://ezsportssss.vercel.app/
 
 Backend:
-https://ezsportssss.onrender.com
+https://ezsports.onrender.com
 
 ---
 
